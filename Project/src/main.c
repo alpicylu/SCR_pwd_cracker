@@ -7,26 +7,29 @@
 #include "parser.h"
 #include "stringmod.h"
 #include "breakers.h"
+#include "structs.h"
 
 /*to get a trully global structure define it in a header*/
 /*REMEMBER TO FREE ALL MALLOCATED SPACE*/
 
+glData globalData;
+
 int main(int argc, char* argv[]){
 
-    glData global;
-    global.dbFilename = "/home/aleksander/scr2/10lista/DB.txt";
-    global.dictFilename =  "/home/aleksander/scr2/10lista/dict.txt";
 
-    initialise_dict(&global);
-    initialise_db(&global);
+    globalData.dbFilename = "/home/aleksander/scr2/10lista/DB.txt";
+    globalData.dictFilename =  "/home/aleksander/scr2/10lista/dict.txt";
 
-    all_lowercase(&global);
-    all_uppercase(&global);
-    capitalised(&global);
+    initialise_dict();
+    initialise_db();
 
-    view_result(&global);
+    all_lowercase();
+    all_uppercase();
+    capitalised();
 
-    cleanup(&global);
+    view_result();
+
+    cleanup();
 
 
 }

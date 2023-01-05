@@ -4,89 +4,85 @@
 #include <openssl/evp.h>
 #include <string.h>
 
-void hash_and_compare(const char* in, glData* data){
+void hash_and_compare(const char* in){
 	char md5[33];
 	bytes2md5(in, strlen(in), md5);
 	printf("%s\n", in);
 
 	//iterate over every user. If user has already beed cracked, skip to the next iteration.
-	for(int idx=0; idx<data->users_len; ++idx){
-		if(data->users[idx].cracked) continue;
+	for(int idx=0; idx<globalData.users_len; ++idx){
+		if(globalData.users[idx].cracked) continue;
 
-		if( strcmp(data->users[idx].hash, md5) == 0 ){ //if the hashes are equal (see strcmp docs)
-			data->users[idx].cracked = true;
+		if( strcmp(globalData.users[idx].hash, md5) == 0 ){ //if the hashes are equal (see strcmp docs)
+			globalData.users[idx].cracked = true;
 
-			data->users[idx].passwd = (char*)malloc(strlen(in) * sizeof(char));
-			strcpy(data->users[idx].passwd, in);
+			globalData.users[idx].passwd = (char*)malloc(strlen(in) * sizeof(char));
+			strcpy(globalData.users[idx].passwd, in);
 		}
 	}
 }
 
-void all_lowercase(glData* data){
+void all_lowercase(){
 	int hardcoded = 20;
 	char buf[100];
 
 	for(int n=-1; n<hardcoded; ++n){ //loop for prefixing and sufixing numbers to strings
-		for(int idx=0; idx<data->dict_len; ++idx){ //iterating over the elements in the dict
-			// hash_and_compare(data->dict[idx], data); 
-
+		for(int idx=0; idx<globalData.dict_len; ++idx){ //iterating over the elements in the dict
 			
-			leading_num(data->dict[idx], buf, n);
-			hash_and_compare(buf, data);
+			leading_num(globalData.dict[idx], buf, n);
+			hash_and_compare(buf);
 
 			if (n==-1) continue; //for n==-1 leading and trailing produce the same result.
-			trailing_num(data->dict[idx], buf, n);
-			hash_and_compare(buf, data);
+			trailing_num(globalData.dict[idx], buf, n);
+			hash_and_compare(buf);
 		}
 	}
 }
 
-void capitalised(glData* data){
+void capitalised(){
 	int hardcoded = 20;
 	char buf[100];
 	char word[100];
 
 	for(int n=-1; n<hardcoded; ++n){ //loop for prefixing and sufixing numbers to strings
-		for(int idx=0; idx<data->dict_len; ++idx){ //iterating over the words in the dict
-			capitalise(data->dict[idx], word);
-
-			// hash_and_compare(word, data);
+		for(int idx=0; idx<globalData.dict_len; ++idx){ //iterating over the words in the dict
+			capitalise(globalData.dict[idx], word);
 
 			leading_num(word, buf, n);
-			hash_and_compare(buf, data);
+			hash_and_compare(buf);
 
 			if (n==-1) continue;
 			trailing_num(word, buf, n);
-			hash_and_compare(buf, data);
+			hash_and_compare(buf);
 		}
 	}
 }
 
-void all_uppercase(glData* data){
+void all_uppercase(){
 	int hardcoded = 20;
 	char buf[100];
 	char word[100];
 
 	for(int n=-1; n<hardcoded; ++n){ //loop for prefixing and sufixing numbers to strings
-		for(int idx=0; idx<data->dict_len; ++idx){ //iterating over the words in the dict
-			uppercase(data->dict[idx], word);
+		for(int idx=0; idx<globalData.dict_len; ++idx){ //iterating over the words in the dict
+			uppercase(globalData.dict[idx], word);
 
 			// hash_and_compare(word, data);
 
 			leading_num(word, buf, n);
-			hash_and_compare(buf, data);
+			hash_and_compare(buf);
 
 			if (n==-1) continue;
 			trailing_num(word, buf, n);
-			hash_and_compare(buf, data);
+			hash_and_compare(buf);
 		}
 	}
 }
 
-void view_result(glData* data){
-	for(int idx=0; idx<data->users_len; ++idx){
-		if(data->users[idx].cracked){
-			printf("%s - %s\n", data->users[idx].email, data->users[idx].passwd);
+void view_result(){
+	for(int idx=0; idx<globalData.users_len; ++idx){
+		if(globalData.users[idx].cracked){
+			printf("%s - %s\n", globalData.users[idx].email, globalData.users[idx].passwd);
 		}
 		
 	}

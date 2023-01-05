@@ -22,9 +22,8 @@ typedef struct {
     unsigned int users_len;
 } glData;
 
-static pthread_mutex_t mutex;
-
-static glData data;
+extern glData globalData;
+extern pthread_mutex_t mutex;
 
 
 #endif

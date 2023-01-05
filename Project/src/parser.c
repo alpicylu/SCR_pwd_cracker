@@ -1,8 +1,10 @@
 #include "parser.h"
+#include "structs.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <openssl/evp.h>
+
 
 void remove_leading_whitespace(char* inp, char* out){
     int i=0;
@@ -16,7 +18,7 @@ void remove_leading_whitespace(char* inp, char* out){
     out[k] = '\0';
 }
 
-void initialise_db(glData* global){
+void initialise_db(){
     int usr_count = 0;
     char ch;
     int max_line = 256;
@@ -25,10 +27,11 @@ void initialise_db(glData* global){
     int email_len = 1; //starting at one to account for \0
     char temp_str[100]; //used for remove_white_space. stores the current hash, and then email
     char line[max_line];
-    FILE* db = fopen(global->dbFilename, "r");
+    FILE* db = fopen(globalData.dbFilename, "r");
+    // printf("%s\n", globalData.dbFilename);
 
     if( db == NULL ){
-        printf("ERROR: At least one of the files have not been found.\n");
+        printf("DB: ERROR: At least one of the files have not been found.\n");
         exit(1);
     }
 
@@ -41,8 +44,8 @@ void initialise_db(glData* global){
         ch = fgetc(db);
         if(ch=='\n') ++usr_count;
     }
-    global->users = (user*)malloc(usr_count*sizeof(user));
-    global->users_len = usr_count;
+    globalData.users = (user*)malloc(usr_count*sizeof(user));
+    globalData.users_len = usr_count;
     rewind(db);
 
     //now for email address
@@ -53,7 +56,7 @@ void initialise_db(glData* global){
     //5. allocate as much memory as was calculated in 4.
     //...
 
-    for(int idx=0; idx<global->users_len; ++idx){ //for each user
+    for(int idx=0; idx<globalData.users_len; ++idx){ //for each user
         if (fgets(line, max_line, db) != NULL ){ //get a single line from db
             token = strtok(line, " ");
             while (token != NULL){ //iterate over columns for that line
@@ -62,14 +65,14 @@ void initialise_db(glData* global){
                 {
                 case 1: //hash
                     remove_leading_whitespace(token, temp_str);
-                    strcpy(global->users[idx].hash, temp_str);
+                    strcpy(globalData.users[idx].hash, temp_str);
                     break;
                 
                 case 2: //email
                     for(int i=0; token[i] != '\0'; ++i) ++email_len; //calculate length of address (STRLEN EXISTS DUMMY)
-                    global->users[idx].email = (char*)malloc(email_len*sizeof(char));
+                    globalData.users[idx].email = (char*)malloc(email_len*sizeof(char));
                     remove_leading_whitespace(token, temp_str);
-                    strcpy(global->users[idx].email, temp_str);
+                    strcpy(globalData.users[idx].email, temp_str);
                     break;
 
                 default:
@@ -79,7 +82,7 @@ void initialise_db(glData* global){
                 token = strtok(NULL, " "); //get the next token. This syntax is rather counterintuitive, but thats how this function rolls.
                 ++column;
             }
-            global->users[idx].cracked = false; //initialising all entires as uncracked
+            globalData.users[idx].cracked = false; //initialising all entires as uncracked
             column = 0;
         }
     }
@@ -88,14 +91,14 @@ void initialise_db(glData* global){
 
 
 
-void initialise_dict(glData* global){
+void initialise_dict(){
     int w_count = 0;
     int w_length = 1; //1 because we need to acconut for /0
     int max_len = 64;
     char ch;
     char buf[64];
     int dict_idx = 0;
-    FILE* dict = fopen(global->dictFilename, "r");
+    FILE* dict = fopen(globalData.dictFilename, "r");
 
     if( dict == NULL ){
         printf("ERROR: At least one of the files have not been found.\n");
@@ -108,8 +111,8 @@ void initialise_dict(glData* global){
         if(ch=='\n') ++w_count;
     }
 
-    global->dict = (char**)malloc(w_count * sizeof(char*));
-    global->dict_len = w_count;
+    globalData.dict = (char**)malloc(w_count * sizeof(char*));
+    globalData.dict_len = w_count;
     
     rewind(dict);
 
@@ -118,8 +121,8 @@ void initialise_dict(glData* global){
         fscanf(dict, "%s", buf);
         for (int i=0; buf[i]!= '\0'; ++i) ++w_length; 
 
-        global->dict[dict_idx] = (char*)malloc(w_length * sizeof(char));
-        strcpy(global->dict[dict_idx], buf);
+        globalData.dict[dict_idx] = (char*)malloc(w_length * sizeof(char));
+        strcpy(globalData.dict[dict_idx], buf);
         ++dict_idx;
     }
 
@@ -132,17 +135,17 @@ void initialise_dict(glData* global){
 //  alloc for number of words in the dict - dict
 //  alloc for each word in dict according to its length - dict
 //  in hash_and_compare to alloc for the found password - user
-void cleanup(glData* data){
-    for(int u=0; u<data->users_len; ++u){
-        free(data->users[u].passwd);
-        free(data->users[u].email);
+void cleanup(){
+    for(int u=0; u<globalData.users_len; ++u){
+        free(globalData.users[u].passwd);
+        free(globalData.users[u].email);
     }
-    free(data->users); //we did not reserve space for every individual user, just space for n users.
+    free(globalData.users); //we did not reserve space for every individual user, just space for n users.
 
-    for(int d=0; d<data->dict_len; ++d){
-        free(data->dict[d]);
+    for(int d=0; d<globalData.dict_len; ++d){
+        free(globalData.dict[d]);
     }
-    free(data->dict);
+    free(globalData.dict);
 
 }
 
