@@ -44,8 +44,8 @@ void initialise_db(){
         ch = fgetc(db);
         if(ch=='\n') ++usr_count;
     }
-    globalData.users = (user*)malloc(usr_count*sizeof(user));
-    globalData.users_len = usr_count;
+    globalData.users = (user*)malloc(usr_count*sizeof(user)); 
+    globalData.users_len = usr_count; 
     rewind(db);
 
     //now for email address

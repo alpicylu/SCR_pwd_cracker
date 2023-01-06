@@ -5,11 +5,11 @@
 
 void hash_and_compare(const char* in);
 
-void all_lowercase();
+void* all_lowercase();
 
-void capitalised();
+void* capitalised();
 
-void all_uppercase();
+void* all_uppercase();
 
 void view_result();
 

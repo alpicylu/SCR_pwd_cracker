@@ -3,26 +3,42 @@
 #include "stringmod.h"
 #include <openssl/evp.h>
 #include <string.h>
+#include <pthread.h>
 
+//This appears to be the only function that writes to global. 
 void hash_and_compare(const char* in){
 	char md5[33];
 	bytes2md5(in, strlen(in), md5);
-	printf("%s\n", in);
 
 	//iterate over every user. If user has already beed cracked, skip to the next iteration.
 	for(int idx=0; idx<globalData.users_len; ++idx){
 		if(globalData.users[idx].cracked) continue;
 
 		if( strcmp(globalData.users[idx].hash, md5) == 0 ){ //if the hashes are equal (see strcmp docs)
-			globalData.users[idx].cracked = true;
 
-			globalData.users[idx].passwd = (char*)malloc(strlen(in) * sizeof(char));
-			strcpy(globalData.users[idx].passwd, in);
+			pthread_mutex_lock(&mtx_crack);
+			globalData.users[idx].cracked = true; //Mutex this write
+			pthread_mutex_unlock(&mtx_crack);
+
+			pthread_mutex_lock(&mtx_pass);
+			globalData.users[idx].passwd = (char*)malloc(strlen(in) * sizeof(char)); //Mutex this write
+			strcpy(globalData.users[idx].passwd, in); //mutex this write
+			pthread_mutex_unlock(&mtx_pass);
+
+			pthread_mutex_lock(&mtx_incr_found);
+			++globalData.passwd_found; //Mutex this write
+			pthread_mutex_unlock(&mtx_incr_found);
+
+			pthread_mutex_lock(&mtx_flag_found);
+			globalData.flag_passwd_found = true; //MUTEX
+			pthread_mutex_unlock(&mtx_flag_found);
+
+			pthread_cond_signal(&cnd_pass_found);
 		}
 	}
 }
 
-void all_lowercase(){
+void* all_lowercase(){
 	int hardcoded = 20;
 	char buf[100];
 
@@ -37,9 +53,11 @@ void all_lowercase(){
 			hash_and_compare(buf);
 		}
 	}
+
+	pthread_exit(NULL);
 }
 
-void capitalised(){
+void* capitalised(){
 	int hardcoded = 20;
 	char buf[100];
 	char word[100];
@@ -56,9 +74,11 @@ void capitalised(){
 			hash_and_compare(buf);
 		}
 	}
+
+	pthread_exit(NULL);
 }
 
-void all_uppercase(){
+void* all_uppercase(){
 	int hardcoded = 20;
 	char buf[100];
 	char word[100];
@@ -77,6 +97,8 @@ void all_uppercase(){
 			hash_and_compare(buf);
 		}
 	}
+
+	pthread_exit(NULL);
 }
 
 void view_result(){
