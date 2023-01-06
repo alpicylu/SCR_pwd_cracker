@@ -45,7 +45,7 @@ void* show_results(){
         globalData.flag_passwd_found = false; //MUTEX
         pthread_mutex_unlock(&mtx_flag_found);
 
-        printf("%s - %s", globalData.users[idx].email, globalData.users[idx].passwd);
+        printf("%s - %s\n", globalData.users[idx].email, globalData.users[idx].passwd);
     }
     pthread_mutex_destroy(&mtx_flag_found);
     pthread_exit(NULL);
@@ -53,7 +53,7 @@ void* show_results(){
 
 int main(int argc, char* argv[]){
 
-    int n_threads = 4; //ammount of threads, 3 consoomers, 1 prodoocer
+    int n_threads = 3; //ammount of threads, 3 consoomers, 1 prodoocer
     pthread_t threads[n_threads];
     pthread_attr_t attr;
 
@@ -72,7 +72,7 @@ int main(int argc, char* argv[]){
     pthread_create(&threads[0], &attr, all_lowercase, NULL);
     pthread_create(&threads[1], &attr, all_uppercase, NULL);
     pthread_create(&threads[2], &attr, capitalised, NULL);
-    pthread_create(&threads[3], &attr, show_results, NULL);
+    // pthread_create(&threads[3], &attr, show_results, NULL);
 
     for(int i=0; i<n_threads; ++i){
         pthread_join(threads[i], NULL);
@@ -84,6 +84,8 @@ int main(int argc, char* argv[]){
     pthread_mutex_destroy(&mtx_pass);
     pthread_cond_destroy(&cnd_pass_found);
 
+    view_result();
+
     cleanup();
 
     pthread_exit(NULL);
@@ -92,24 +94,24 @@ int main(int argc, char* argv[]){
 
 
 
-void driver(){
+// void driver(){
 
-    globalData.dbFilename = "/home/aleksander/scr2/10lista/DB.txt";
-    globalData.dictFilename =  "/home/aleksander/scr2/10lista/dict.txt";
-    globalData.passwd_found = 0;
+//     globalData.dbFilename = "/home/aleksander/scr2/10lista/DB.txt";
+//     globalData.dictFilename =  "/home/aleksander/scr2/10lista/dict.txt";
+//     globalData.passwd_found = 0;
 
-    initialise_dict();
-    initialise_db();
+//     initialise_dict();
+//     initialise_db();
 
-    all_lowercase(); //TH1
-    all_uppercase(); //TH2
-    capitalised(); //TH3
+//     all_lowercase(); //TH1
+//     all_uppercase(); //TH2
+//     capitalised(); //TH3
 
-    view_result(); //TH0 (main)
+//     view_result(); //TH0 (main)
 
-    cleanup();
+//     cleanup();
 
-}
+// }
 
     /*implementing a separate structure for just cracked passwords and emails is redundant, since it would just be a copy of the
     content found in glData.
