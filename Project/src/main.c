@@ -37,6 +37,11 @@ void* show_results(){
     int idx;
     while (true){ 
 
+        pthread_mutex_lock(&mtx_passwds_cracked);
+        // if (globalData.users_len == globalData.passwds_cracked) break;
+        if (globalData.passwds_cracked == 4) break;
+        pthread_mutex_unlock(&mtx_passwds_cracked);
+
         pthread_mutex_lock(&mtx_flag_found);
         while (!globalData.flag_passwd_found){
             pthread_cond_wait(&cnd_pass_found, &mtx_flag_found);
@@ -45,10 +50,6 @@ void* show_results(){
         idx = globalData.newly_cracked_idx;
         printf("idx: %d ", idx); 
         pthread_mutex_unlock(&mtx_flag_found);
-
-        pthread_mutex_lock(&mtx_passwds_cracked);
-        if (globalData.users_len == globalData.passwds_cracked) break;
-        pthread_mutex_unlock(&mtx_passwds_cracked);
 
         pthread_mutex_lock(&mtx_pass);
         printf("%s - %s\n", globalData.users[idx].email, globalData.users[idx].passwd);
@@ -91,7 +92,7 @@ int main(int argc, char* argv[]){
     pthread_mutex_destroy(&mtx_pass);
     pthread_cond_destroy(&cnd_pass_found);
 
-    view_result();
+    print_summary();
 
     cleanup();
 
@@ -114,7 +115,7 @@ int main(int argc, char* argv[]){
 //     all_uppercase(); //TH2
 //     capitalised(); //TH3
 
-//     view_result(); //TH0 (main)
+//     print_summary(); //TH0 (main)
 
 //     cleanup();
 

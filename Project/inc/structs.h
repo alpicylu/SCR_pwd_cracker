@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <pthread.h>
+#include <limits.h>
 
 typedef struct {
     char hash[33]; //a hash will always be 32 chars in lenght, +1 for null terminator.
@@ -32,6 +33,9 @@ extern pthread_mutex_t mtx_crack;
 extern pthread_mutex_t mtx_passwds_cracked;
 extern pthread_mutex_t mtx_flag_found;
 extern pthread_cond_t cnd_pass_found;
+
+
+#define NUMBER_APPEND_LIMIT 2000 //the maximal number that will be reached by the functions that append or prefix
 
 
 

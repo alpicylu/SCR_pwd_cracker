@@ -11,7 +11,7 @@ void* capitalised();
 
 void* all_uppercase();
 
-void view_result();
+void print_summary();
 
 void bytes2md5(const char *data, int len, char *md5buf);
 

@@ -40,10 +40,9 @@ void hash_and_compare(const char* in){
 }
 
 void* all_lowercase(){
-	int hardcoded = 20;
 	char buf[100];
 
-	for(int n=-1; n<hardcoded; ++n){ //loop for prefixing and sufixing numbers to strings
+	for(int n=-1; n<NUMBER_APPEND_LIMIT; ++n){ //loop for prefixing and sufixing numbers to strings
 		for(int idx=0; idx<globalData.dict_len; ++idx){ //iterating over the elements in the dict
 			
 			leading_num(globalData.dict[idx], buf, n);
@@ -59,11 +58,10 @@ void* all_lowercase(){
 }
 
 void* capitalised(){
-	int hardcoded = 20;
 	char buf[100];
 	char word[100];
 
-	for(int n=-1; n<hardcoded; ++n){ //loop for prefixing and sufixing numbers to strings
+	for(int n=-1; n<NUMBER_APPEND_LIMIT; ++n){ //loop for prefixing and sufixing numbers to strings
 		for(int idx=0; idx<globalData.dict_len; ++idx){ //iterating over the words in the dict
 			capitalise(globalData.dict[idx], word);
 
@@ -80,15 +78,12 @@ void* capitalised(){
 }
 
 void* all_uppercase(){
-	int hardcoded = 20;
 	char buf[100];
 	char word[100];
 
-	for(int n=-1; n<hardcoded; ++n){ //loop for prefixing and sufixing numbers to strings
+	for(int n=-1; n<NUMBER_APPEND_LIMIT; ++n){ //loop for prefixing and sufixing numbers to strings
 		for(int idx=0; idx<globalData.dict_len; ++idx){ //iterating over the words in the dict
 			uppercase(globalData.dict[idx], word);
-
-			// hash_and_compare(word, data);
 
 			leading_num(word, buf, n);
 			hash_and_compare(buf);
@@ -102,7 +97,8 @@ void* all_uppercase(){
 	pthread_exit(NULL);
 }
 
-void view_result(){
+void print_summary(){
+	printf("\n-------SUMMARY-------\n");
 	for(int idx=0; idx<globalData.users_len; ++idx){
 		if(globalData.users[idx].cracked){
 			printf("%s - %s\n", globalData.users[idx].email, globalData.users[idx].passwd);
