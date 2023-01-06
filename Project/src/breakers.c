@@ -25,12 +25,13 @@ void hash_and_compare(const char* in){
 			strcpy(globalData.users[idx].passwd, in); //mutex this write
 			pthread_mutex_unlock(&mtx_pass);
 
-			pthread_mutex_lock(&mtx_incr_found);
-			++globalData.passwd_found; //Mutex this write
-			pthread_mutex_unlock(&mtx_incr_found);
+			pthread_mutex_lock(&mtx_passwds_cracked);
+			++globalData.passwds_cracked; //Mutex this write
+			pthread_mutex_unlock(&mtx_passwds_cracked);
 
 			pthread_mutex_lock(&mtx_flag_found);
 			globalData.flag_passwd_found = true; //MUTEX
+			globalData.newly_cracked_idx = idx;
 			pthread_mutex_unlock(&mtx_flag_found);
 
 			pthread_cond_signal(&cnd_pass_found);
