@@ -18,6 +18,8 @@ void* two_words_lowercase(); //this producer will take two words from the dictio
 
 void* two_words_lowercase_numbers();
 
+void* two_words_capitalised_uppercase();
+
 void print_summary();
 
 void bytes2md5(const char *data, int len, char *md5buf);

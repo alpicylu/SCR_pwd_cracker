@@ -28,17 +28,12 @@ typedef struct {
 
 extern glData globalData;
 
-extern int n_of_producers; //used by pthread_barrier_wait. We want producers to wait at the exit untill all producers finish, and then cancel the consuemr thread.
-
 extern pthread_mutex_t mtx_pass;
 extern pthread_mutex_t mtx_crack;
 extern pthread_mutex_t mtx_passwds_cracked;
 extern pthread_mutex_t mtx_flag_found;
 
 extern pthread_cond_t cnd_pass_found; //condition that will signal the consummer that a new passowrd was found
-
-extern pthread_barrier_t bar_producer_exit; //Producers will wait at their exits unitll every other porducer finishes their tasks.
-//this is done to facilitate the consumer exiting once producers terminated.
 
 
 

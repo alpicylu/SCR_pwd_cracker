@@ -125,23 +125,48 @@ void* two_words_lowercase_numbers(){
 		for(int k=0; k<globalData.dict_len; ++k){
 			for(int n=-1; n<NUMBER_APPEND_LIMIT; ++n){
 
-				two_words_space_between(globalData.dict[i], globalData.dict[k], buf); //word cat
-				hash_and_compare(buf);
-
-				leading_num(globalData.dict[i], word1, n); //3word cat
+				//3word cat
+				leading_num(globalData.dict[i], word1, n); 
 				two_words_space_between(word1, globalData.dict[k], buf);
 				hash_and_compare(buf);
 
-				trailing_num(globalData.dict[i], word1, n); //word3 cat
+				//word3 cat
+				trailing_num(globalData.dict[i], word1, n); 
 				two_words_space_between(word1, globalData.dict[k], buf);
 				hash_and_compare(buf);
 
-				leading_num(globalData.dict[k], word2, n); //word 3cat
+				//word 3cat
+				leading_num(globalData.dict[k], word2, n); 
 				two_words_space_between(globalData.dict[i], word2, buf);
 				hash_and_compare(buf);
 
-				trailing_num(globalData.dict[k], word2, n); //word cat3
+				//word cat3
+				trailing_num(globalData.dict[k], word2, n); 
 				two_words_space_between(globalData.dict[i], word2, buf);
+				hash_and_compare(buf);
+
+				//3word 3cat
+				leading_num(globalData.dict[i], word1, n);
+				leading_num(globalData.dict[k], word2, n);
+				two_words_space_between(word1, word2, buf);
+				hash_and_compare(buf);
+
+				//word3 3cat
+				trailing_num(globalData.dict[i], word1, n);
+				leading_num(globalData.dict[k], word2, n);
+				two_words_space_between(word1, word2, buf);
+				hash_and_compare(buf);
+
+				//3word cat3
+				leading_num(globalData.dict[i], word1, n);
+				trailing_num(globalData.dict[k], word2, n);
+				two_words_space_between(word1, word2, buf);
+				hash_and_compare(buf);
+
+				//word3 cat3
+				trailing_num(globalData.dict[i], word1, n);
+				trailing_num(globalData.dict[k], word2, n);
+				two_words_space_between(word1, word2, buf);
 				hash_and_compare(buf);
 
 			}
@@ -150,6 +175,64 @@ void* two_words_lowercase_numbers(){
 	// pthread_barrier_wait(&bar_producer_exit);
 	pthread_exit(NULL);
 }
+
+void* two_words_capitalised_uppercase(){
+
+	char buf[100];
+	char word1[100];
+	char word2[100];
+
+	for(int i=0; i<globalData.dict_len; ++i){
+		for(int k=0; k<globalData.dict_len; ++k){
+			//Word cat
+			capitalise(globalData.dict[i], word1);
+			two_words_space_between(word1, globalData.dict[k], buf);
+			hash_and_compare(buf);
+
+			//word Cat
+			capitalise(globalData.dict[k], word2);
+			two_words_space_between(globalData.dict[i], word2, buf);
+			hash_and_compare(buf);
+
+			//WORD cat
+			uppercase(globalData.dict[i], word1);
+			two_words_space_between(word1, globalData.dict[k], buf);
+			hash_and_compare(buf);
+
+			//word CAT
+			uppercase(globalData.dict[k], word2);
+			two_words_space_between(globalData.dict[i], word2, buf);
+			hash_and_compare(buf);
+
+			//Word Cat
+			capitalise(globalData.dict[i], word1);
+			capitalise(globalData.dict[k], word2);
+			two_words_space_between(word1, word2, buf);
+			hash_and_compare(buf);
+			
+			//WORD Cat
+			uppercase(globalData.dict[i], word1);
+			capitalise(globalData.dict[k], word2);
+			two_words_space_between(word1, word2, buf);
+			hash_and_compare(buf);
+
+			//Word CAT
+			capitalise(globalData.dict[i], word1);
+			uppercase(globalData.dict[k], word2);
+			two_words_space_between(word1, word2, buf);
+			hash_and_compare(buf);
+
+			//WORD CAT
+			uppercase(globalData.dict[i], word1);
+			uppercase(globalData.dict[k], word2);
+			two_words_space_between(word1, word2, buf);
+			hash_and_compare(buf);
+
+		}
+	}
+	pthread_exit(NULL);
+}
+
 
 void print_summary(){
 	printf("\n-------SUMMARY-------\n");
