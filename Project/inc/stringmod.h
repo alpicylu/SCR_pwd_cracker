@@ -12,4 +12,6 @@ void leading_num(char* in, char* out, int num);
 
 void trailing_num(char* in, char* out, int num);
 
+void two_words_space_between(char* in1, char* in2, char* out);
+
 #endif

@@ -40,6 +40,7 @@ void hash_and_compare(const char* in){
 }
 
 void* all_lowercase(){
+
 	char buf[100];
 
 	for(int n=-1; n<NUMBER_APPEND_LIMIT; ++n){ //loop for prefixing and sufixing numbers to strings
@@ -53,11 +54,12 @@ void* all_lowercase(){
 			hash_and_compare(buf);
 		}
 	}
-
+	// pthread_barrier_wait(&bar_producer_exit);
 	pthread_exit(NULL);
 }
 
 void* capitalised(){
+
 	char buf[100];
 	char word[100];
 
@@ -73,7 +75,7 @@ void* capitalised(){
 			hash_and_compare(buf);
 		}
 	}
-
+	// pthread_barrier_wait(&bar_producer_exit);
 	pthread_exit(NULL);
 }
 
@@ -93,7 +95,59 @@ void* all_uppercase(){
 			hash_and_compare(buf);
 		}
 	}
+	// pthread_barrier_wait(&bar_producer_exit);
+	pthread_exit(NULL);
+}
 
+
+void* two_words_lowercase(){
+
+	char buf[100];
+
+	for(int i=0; i<globalData.dict_len; ++i){
+		for(int k=0; k<globalData.dict_len; ++k){
+			two_words_space_between(globalData.dict[i], globalData.dict[k], buf);
+
+			hash_and_compare(buf);
+		}
+	}
+	// pthread_barrier_wait(&bar_producer_exit);
+	pthread_exit(NULL);
+}
+
+void* two_words_lowercase_numbers(){
+
+	char buf[100];
+	char word1[100];
+	char word2[100];
+
+	for(int i=0; i<globalData.dict_len; ++i){
+		for(int k=0; k<globalData.dict_len; ++k){
+			for(int n=-1; n<NUMBER_APPEND_LIMIT; ++n){
+
+				two_words_space_between(globalData.dict[i], globalData.dict[k], buf); //word cat
+				hash_and_compare(buf);
+
+				leading_num(globalData.dict[i], word1, n); //3word cat
+				two_words_space_between(word1, globalData.dict[k], buf);
+				hash_and_compare(buf);
+
+				trailing_num(globalData.dict[i], word1, n); //word3 cat
+				two_words_space_between(word1, globalData.dict[k], buf);
+				hash_and_compare(buf);
+
+				leading_num(globalData.dict[k], word2, n); //word 3cat
+				two_words_space_between(globalData.dict[i], word2, buf);
+				hash_and_compare(buf);
+
+				trailing_num(globalData.dict[k], word2, n); //word cat3
+				two_words_space_between(globalData.dict[i], word2, buf);
+				hash_and_compare(buf);
+
+			}
+		}
+	}
+	// pthread_barrier_wait(&bar_producer_exit);
 	pthread_exit(NULL);
 }
 

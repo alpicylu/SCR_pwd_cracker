@@ -38,3 +38,11 @@ void trailing_num(char* in, char* out, int num){
     }
     strcpy(out, in);
 }
+
+void two_words_space_between(char* in1, char* in2, char* out){
+    char buf[100];
+    strcpy(buf, in1);
+    strcat(buf, " ");
+    strcat(buf, in2);
+    strcpy(out, buf);
+}

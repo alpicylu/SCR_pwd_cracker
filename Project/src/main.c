@@ -15,10 +15,13 @@ pthread_mutex_t mtx_pass;
 pthread_mutex_t mtx_crack;
 pthread_mutex_t mtx_passwds_cracked;
 pthread_mutex_t mtx_flag_found;
-pthread_cond_t cnd_pass_found; 
+pthread_cond_t cnd_pass_found;
+pthread_barrier_t bar_producer_exit;
+int n_of_producers;
 
 /*Make a function that will init global itself: set passwds_cracked to 0, set filenames, etc.*/
 
+/*Initialises teh structure glData*/
 void init_global(){
     globalData.dbFilename = "/home/aleksander/scr2/10lista/DB.txt";
     globalData.dictFilename =  "/home/aleksander/scr2/10lista/dict.txt";
@@ -38,8 +41,8 @@ void* show_results(){
     while (true){ 
 
         pthread_mutex_lock(&mtx_passwds_cracked);
-        // if (globalData.users_len == globalData.passwds_cracked) break;
-        if (globalData.passwds_cracked == 4) break;
+        if (globalData.users_len == globalData.passwds_cracked) break;
+        // if (globalData.passwds_cracked == 4) break;
         pthread_mutex_unlock(&mtx_passwds_cracked);
 
         pthread_mutex_lock(&mtx_flag_found);
@@ -61,7 +64,9 @@ void* show_results(){
 
 int main(int argc, char* argv[]){
 
-    int n_threads = 4; //ammount of threads, 3 consoomers, 1 prodoocer
+    int n_threads = 4;
+    n_of_producers = n_threads-1; //because we have one consumer
+
     pthread_t threads[n_threads];
     pthread_attr_t attr;
 
@@ -77,10 +82,16 @@ int main(int argc, char* argv[]){
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-    pthread_create(&threads[0], &attr, all_lowercase, NULL);
-    pthread_create(&threads[1], &attr, all_uppercase, NULL);
-    pthread_create(&threads[2], &attr, capitalised, NULL);
-    pthread_create(&threads[3], &attr, show_results, NULL);
+    pthread_barrier_init(&bar_producer_exit, NULL, n_of_producers);
+    
+    
+    pthread_create(&threads[1], &attr, all_lowercase, NULL);
+    pthread_create(&threads[2], &attr, all_uppercase, NULL);
+    pthread_create(&threads[3], &attr, capitalised, NULL);
+    pthread_create(&threads[0], &attr, show_results, NULL); //consoomer
+    
+    // pthread_create(&threads[4], &attr, two_words_lowercase, NULL);
+    
 
     for(int i=0; i<n_threads; ++i){
         pthread_join(threads[i], NULL);
