@@ -83,11 +83,13 @@ int main(int argc, char* argv[]){
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
     pthread_barrier_init(&bar_producer_exit, NULL, n_of_producers);
+
+    int oldtype;
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype);
     
-    
-    pthread_create(&threads[1], &attr, all_lowercase, NULL);
-    pthread_create(&threads[2], &attr, all_uppercase, NULL);
-    pthread_create(&threads[3], &attr, capitalised, NULL);
+    pthread_create(&threads[1], &attr, all_lowercase, (void*)threads[0]);
+    pthread_create(&threads[2], &attr, all_uppercase, (void*)threads[0]);
+    pthread_create(&threads[3], &attr, capitalised, (void*)threads[0]);
     pthread_create(&threads[0], &attr, show_results, NULL); //consoomer
     
     // pthread_create(&threads[4], &attr, two_words_lowercase, NULL);

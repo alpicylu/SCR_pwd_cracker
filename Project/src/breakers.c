@@ -39,7 +39,8 @@ void hash_and_compare(const char* in){
 	}
 }
 
-void* all_lowercase(){
+void* all_lowercase(void* consumer_th){
+	pthread_t cons = (pthread_t)consumer_th;
 
 	char buf[100];
 
@@ -54,12 +55,13 @@ void* all_lowercase(){
 			hash_and_compare(buf);
 		}
 	}
-	// pthread_barrier_wait(&bar_producer_exit);
+	pthread_barrier_wait(&bar_producer_exit);
+	pthread_cancel(cons);
 	pthread_exit(NULL);
 }
 
-void* capitalised(){
-
+void* capitalised(void* consumer_th){
+	pthread_t cons = (pthread_t)consumer_th;
 	char buf[100];
 	char word[100];
 
@@ -75,11 +77,13 @@ void* capitalised(){
 			hash_and_compare(buf);
 		}
 	}
-	// pthread_barrier_wait(&bar_producer_exit);
+	pthread_barrier_wait(&bar_producer_exit);
+	//pthread_cancel(cons);
 	pthread_exit(NULL);
 }
 
-void* all_uppercase(){
+void* all_uppercase(void* consumer_th){
+	pthread_t cons = (pthread_t)consumer_th;
 	char buf[100];
 	char word[100];
 
@@ -95,12 +99,14 @@ void* all_uppercase(){
 			hash_and_compare(buf);
 		}
 	}
-	// pthread_barrier_wait(&bar_producer_exit);
+	pthread_barrier_wait(&bar_producer_exit);
+	//pthread_cancel(cons);
 	pthread_exit(NULL);
 }
 
 
-void* two_words_lowercase(){
+void* two_words_lowercase(void* consumer_th){
+	pthread_t cons = (pthread_t)consumer_th;
 
 	char buf[100];
 
@@ -111,12 +117,13 @@ void* two_words_lowercase(){
 			hash_and_compare(buf);
 		}
 	}
-	// pthread_barrier_wait(&bar_producer_exit);
+	pthread_barrier_wait(&bar_producer_exit);
+	//pthread_cancel(cons);
 	pthread_exit(NULL);
 }
 
-void* two_words_lowercase_numbers(){
-
+void* two_words_lowercase_numbers(void* consumer_th){
+	pthread_t cons = (pthread_t)consumer_th;
 	char buf[100];
 	char word1[100];
 	char word2[100];
@@ -147,7 +154,8 @@ void* two_words_lowercase_numbers(){
 			}
 		}
 	}
-	// pthread_barrier_wait(&bar_producer_exit);
+	pthread_barrier_wait(&bar_producer_exit);
+	//pthread_cancel(cons);
 	pthread_exit(NULL);
 }
 
