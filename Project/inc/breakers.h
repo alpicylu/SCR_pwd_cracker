@@ -5,7 +5,7 @@
 
 void hash_and_compare(const char* in);
 
-void* all_lowercase();
+void* all_lowercase(void* consumer_th); //this thread is also delegated to informing the consumer when all producers finished the work.
 
 void* capitalised();
 

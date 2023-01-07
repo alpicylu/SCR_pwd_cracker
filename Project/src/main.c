@@ -15,6 +15,7 @@ pthread_mutex_t mtx_pass;
 pthread_mutex_t mtx_crack;
 pthread_mutex_t mtx_passwds_cracked;
 pthread_mutex_t mtx_flag_found;
+pthread_barrier_t bar_producers_finished;
 pthread_cond_t cnd_pass_found;
 
 /*Make a function that will init global itself: set passwds_cracked to 0, set filenames, etc.*/
@@ -48,9 +49,20 @@ void* show_results(){
             pthread_cond_wait(&cnd_pass_found, &mtx_flag_found);
         }
         globalData.flag_passwd_found = false;
+        // pthread_mutex_unlock(&mtx_flag_found);
+
+        /*this might seem strange at first: why do i unlock a mutex just to lock it back a few lines below?
+        because this is the place where i need to put the testcancel.
+        If i didnt rdo it i would have to either cancel the thread before the mutex was unlocked, which is ugly
+        and shuld be avoided, or print out the last found password twice (cancelation at MARK), because the delegated producer signals
+        this thread as if a new password has been found to unlock it. */
+        // pthread_testcancel();
+
+        // pthread_mutex_lock(&mtx_flag_found);
         idx = globalData.newly_cracked_idx;
         printf("%d - ", idx); 
         pthread_mutex_unlock(&mtx_flag_found);
+        //MARK
 
         pthread_mutex_lock(&mtx_pass);
         printf("%s - %s\n", globalData.users[idx].email, globalData.users[idx].passwd);
@@ -62,7 +74,7 @@ void* show_results(){
 
 int main(int argc, char* argv[]){
 
-    int n_threads = 8;
+    int n_threads = 7;
     pthread_t threads[n_threads];
     pthread_attr_t attr;
 
@@ -77,14 +89,15 @@ int main(int argc, char* argv[]){
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+
+    pthread_barrier_init(&bar_producers_finished, NULL, n_threads-1);
     
-    pthread_create(&threads[1], &attr, all_lowercase, NULL);
+    pthread_create(&threads[1], &attr, all_lowercase, (void*)&threads[0]);
     pthread_create(&threads[2], &attr, all_uppercase, NULL);
     pthread_create(&threads[3], &attr, capitalised, NULL);
-    pthread_create(&threads[4], &attr, two_words_lowercase, NULL);
-    pthread_create(&threads[5], &attr, two_words_lowercase_numbers, NULL);
-    pthread_create(&threads[6], &attr, two_words_capitalised_uppercase, NULL);
-    pthread_create(&threads[7], &attr, two_words_lowercase, NULL);
+    pthread_create(&threads[4], &attr, two_words_lowercase_numbers, NULL);
+    pthread_create(&threads[5], &attr, two_words_capitalised_uppercase, NULL);
+    pthread_create(&threads[6], &attr, two_words_lowercase, NULL);
 
     pthread_create(&threads[0], &attr, show_results, NULL); //consoomer
     
@@ -97,6 +110,7 @@ int main(int argc, char* argv[]){
     pthread_mutex_destroy(&mtx_passwds_cracked);
     pthread_mutex_destroy(&mtx_pass);
     pthread_cond_destroy(&cnd_pass_found);
+    pthread_barrier_destroy(&bar_producers_finished);
 
     print_summary();
 

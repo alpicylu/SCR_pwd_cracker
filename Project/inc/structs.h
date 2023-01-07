@@ -33,12 +33,14 @@ extern pthread_mutex_t mtx_crack;
 extern pthread_mutex_t mtx_passwds_cracked;
 extern pthread_mutex_t mtx_flag_found;
 
+extern pthread_barrier_t bar_producers_finished; 
+
 extern pthread_cond_t cnd_pass_found; //condition that will signal the consummer that a new passowrd was found
 
 
 
 
-#define NUMBER_APPEND_LIMIT 10000 //the maximal number that will be reached by the functions that append or prefix
+#define NUMBER_APPEND_LIMIT 2500 //the maximal number that will be reached by the functions that append or prefix
 
 
 

@@ -140,12 +140,13 @@ void cleanup(){
         free(globalData.users[u].passwd);
         free(globalData.users[u].email);
     }
-    free(globalData.users); //we did not reserve space for every individual user, just space for n users.
+    // free(globalData.users); //we did not reserve space for every individual user, just space for n users.
 
+    //for whatever reason, free(globalData.dict[0]) causes a double free error
     for(int d=0; d<globalData.dict_len; ++d){
         free(globalData.dict[d]);
     }
-    free(globalData.dict);
 
+    free(globalData.dict);
 }
 

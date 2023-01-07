@@ -39,7 +39,9 @@ void hash_and_compare(const char* in){
 	}
 }
 
-void* all_lowercase(){
+/*this producer will be delegated to cancel the consumer thread once every producer finished their work*/
+void* all_lowercase(void* consumer_th){
+	pthread_t* cons = (pthread_t*)consumer_th;
 
 	char buf[100];
 
@@ -54,7 +56,15 @@ void* all_lowercase(){
 			hash_and_compare(buf);
 		}
 	}
-	// pthread_barrier_wait(&bar_producer_exit);
+
+	/*informing the consumer:*/
+	pthread_barrier_wait(&bar_producers_finished);
+	//set found password to true and signal the condition to free the consumer
+	//actually theres no need to signal the consumer, docs say that a thread is cancallabe while it waits.
+	// globalData.flag_passwd_found = true; //No need to mutex, only this thread does this operation.
+	// pthread_cond_signal(&cnd_pass_found);
+	pthread_cancel(*cons);
+
 	pthread_exit(NULL);
 }
 
@@ -75,7 +85,7 @@ void* capitalised(){
 			hash_and_compare(buf);
 		}
 	}
-	// pthread_barrier_wait(&bar_producer_exit);
+	pthread_barrier_wait(&bar_producers_finished);
 	pthread_exit(NULL);
 }
 
@@ -95,7 +105,7 @@ void* all_uppercase(){
 			hash_and_compare(buf);
 		}
 	}
-	// pthread_barrier_wait(&bar_producer_exit);
+	pthread_barrier_wait(&bar_producers_finished);
 	pthread_exit(NULL);
 }
 
@@ -111,7 +121,7 @@ void* two_words_lowercase(){
 			hash_and_compare(buf);
 		}
 	}
-	// pthread_barrier_wait(&bar_producer_exit);
+	pthread_barrier_wait(&bar_producers_finished);
 	pthread_exit(NULL);
 }
 
@@ -172,7 +182,7 @@ void* two_words_lowercase_numbers(){
 			}
 		}
 	}
-	// pthread_barrier_wait(&bar_producer_exit);
+	pthread_barrier_wait(&bar_producers_finished);
 	pthread_exit(NULL);
 }
 
@@ -230,6 +240,7 @@ void* two_words_capitalised_uppercase(){
 
 		}
 	}
+	pthread_barrier_wait(&bar_producers_finished);
 	pthread_exit(NULL);
 }
 
