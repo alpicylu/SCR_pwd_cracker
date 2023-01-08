@@ -6,7 +6,8 @@
 #include <limits.h>
 
 #define NUMBER_APPEND_LIMIT 2500 //the maximal number that will be reached by the functions that append or prefix
-#define MAX_FILENAME 100
+#define MAX_FILENAME 100 //defines the maximum lengh of a filename/path to file
+#define N_THREADS 7 //number of threads, including the consumer
 
 
 typedef struct {
@@ -31,6 +32,8 @@ typedef struct {
 } glData;
 
 extern glData globalData;
+
+extern pthread_t threads[N_THREADS];
 
 extern pthread_mutex_t mtx_pass;
 extern pthread_mutex_t mtx_crack;

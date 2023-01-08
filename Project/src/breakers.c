@@ -40,8 +40,8 @@ void hash_and_compare(const char* in){
 }
 
 /*this producer will be delegated to cancel the consumer thread once every producer finished their work*/
-void* all_lowercase(void* consumer_th){
-	pthread_t* cons = (pthread_t*)consumer_th;
+void* all_lowercase(){
+	// pthread_t* cons = (pthread_t*)consumer_th;
 
 	char buf[100];
 
@@ -63,7 +63,7 @@ void* all_lowercase(void* consumer_th){
 	//actually theres no need to signal the consumer, docs say that a thread is cancallabe while it waits.
 	// globalData.flag_passwd_found = true; //No need to mutex, only this thread does this operation.
 	// pthread_cond_signal(&cnd_pass_found);
-	pthread_cancel(*cons);
+	pthread_cancel(threads[0]); //thread 0 is the consumer.
 
 	pthread_exit(NULL);
 }

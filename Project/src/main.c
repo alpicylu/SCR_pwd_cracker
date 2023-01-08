@@ -13,6 +13,7 @@
 
 // defining global variables that were declared extern in structs.h
 glData globalData;
+pthread_t threads[N_THREADS];
 pthread_mutex_t mtx_pass;
 pthread_mutex_t mtx_crack;
 pthread_mutex_t mtx_passwds_cracked;
@@ -103,9 +104,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    int n_threads = 7;
-    pthread_t threads[n_threads];
+    // int n_threads = 7;
+    // pthread_t threads[n_threads];
     pthread_attr_t attr;
+    
 
     init_global(dbFilename, dictFilename);
     sleep(1);
@@ -120,7 +122,7 @@ int main(int argc, char *argv[])
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-    pthread_barrier_init(&bar_producers_finished, NULL, n_threads - 1);
+    pthread_barrier_init(&bar_producers_finished, NULL, N_THREADS-1);
 
     clock_t start = clock();
 
@@ -133,7 +135,7 @@ int main(int argc, char *argv[])
 
     pthread_create(&threads[0], &attr, show_results, NULL); // consoomer
 
-    for (int i = 0; i < n_threads; ++i)
+    for (int i = 0; i < N_THREADS; ++i)
     {
         pthread_join(threads[i], NULL);
     }
