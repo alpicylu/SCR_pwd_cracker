@@ -5,6 +5,10 @@
 #include <pthread.h>
 #include <limits.h>
 
+#define NUMBER_APPEND_LIMIT 2500 //the maximal number that will be reached by the functions that append or prefix
+#define MAX_FILENAME 100
+
+
 typedef struct {
     char hash[33]; //a hash will always be 32 chars in lenght, +1 for null terminator.
     char* email;
@@ -13,8 +17,8 @@ typedef struct {
 } user;
 
 typedef struct {
-    char* dictFilename;
-    char* dbFilename;
+    char dictFilename[MAX_FILENAME];
+    char dbFilename[MAX_FILENAME];
 
     char** dict;
     user* users;
@@ -37,10 +41,6 @@ extern pthread_barrier_t bar_producers_finished;
 
 extern pthread_cond_t cnd_pass_found; //condition that will signal the consummer that a new passowrd was found
 
-
-
-
-#define NUMBER_APPEND_LIMIT 2500 //the maximal number that will be reached by the functions that append or prefix
 
 
 

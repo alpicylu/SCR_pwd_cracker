@@ -245,8 +245,10 @@ void* two_words_capitalised_uppercase(){
 }
 
 
-void print_summary(){
+void print_summary(float time){
 	printf("\n-------SUMMARY-------\n");
+	printf("Time: %fs\n", time);
+	printf("Accounts cracked: \n");
 	for(int idx=0; idx<globalData.users_len; ++idx){
 		if(globalData.users[idx].cracked){
 			printf("%s - %s\n", globalData.users[idx].email, globalData.users[idx].passwd);

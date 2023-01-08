@@ -2,6 +2,7 @@
 #define BREAKERS_H
 
 #include "structs.h"
+#include <time.h>
 
 void hash_and_compare(const char* in);
 
@@ -20,7 +21,7 @@ void* two_words_lowercase_numbers();
 
 void* two_words_capitalised_uppercase();
 
-void print_summary();
+void print_summary(float time);
 
 void bytes2md5(const char *data, int len, char *md5buf);
 
