@@ -25,11 +25,13 @@ bool consumer_end_prematurely;
 
 /*the sole purpose of this habdler is to signal the consumer to end its work*/
 void signal_handler_exit_prematurely(int sig){
+
     consumer_end_prematurely = true; //No need for mutex, this is the only place where
     //this variable is modified. This variable is read in consumer, but threre still should be no problem?
 
     //Setting those does not mean that a new password was found. Thats just for un-waiting the consumer
     pthread_cond_signal(&cnd_pass_found);
+
     globalData.flag_passwd_found = true;
     
 }
@@ -70,12 +72,16 @@ void *show_results()
         globalData.flag_passwd_found = false;
 
         /*Condition only true if signaled by the custom handler*/
+
         if(consumer_end_prematurely){
+            pthread_mutex_unlock(&mtx_flag_found);
             for(int i=1; i<N_THREADS; ++i){ //thread 0 is consumer
                 pthread_cancel(threads[i]);
             }
             print_summary();
-            printf("I QUIT\n");
+            printf("Producer quit\n");
+
+            
             pthread_exit(NULL);
         }
 
@@ -154,7 +160,7 @@ int main(int argc, char *argv[])
     would be equal to the number of producers, but maybe later.*/
     /*WARNING: This requires a little ducktape, so be sure that the number
     of producer funcitons defined in the array is equal to the number of producer threads*/
-    for(int i=0; i<N_THREADS-1; ++i){
+    for(int i=0; i<N_THREADS-1; ++i){ //i from 0 to 5
         pthread_create(&threads[i+1], &attr, producers[i], NULL);
     }
 

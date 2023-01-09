@@ -10,8 +10,7 @@ void hash_and_compare(const char* in){
 	char md5[33];
 	bytes2md5(in, strlen(in), md5);
 
-	
-	//signal handler.
+	pthread_testcancel(); //For producer thread cancelation invoked by the consumer signaled by the custom
 
 	//iterate over every user. If user has already beed cracked, skip to the next iteration.
 	for(int idx=0; idx<globalData.users_len; ++idx){
