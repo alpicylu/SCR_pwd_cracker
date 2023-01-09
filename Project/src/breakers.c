@@ -10,6 +10,9 @@ void hash_and_compare(const char* in){
 	char md5[33];
 	bytes2md5(in, strlen(in), md5);
 
+	
+	//signal handler.
+
 	//iterate over every user. If user has already beed cracked, skip to the next iteration.
 	for(int idx=0; idx<globalData.users_len; ++idx){
 		if(globalData.users[idx].cracked) continue;
@@ -35,19 +38,22 @@ void hash_and_compare(const char* in){
 			pthread_mutex_unlock(&mtx_flag_found);
 
 			pthread_cond_signal(&cnd_pass_found);
+
+			
 		}
 	}
 }
 
 /*this producer will be delegated to cancel the consumer thread once every producer finished their work*/
 void* all_lowercase(){
-	// pthread_t* cons = (pthread_t*)consumer_th;
 
 	char buf[100];
 
 	for(int n=-1; n<NUMBER_APPEND_LIMIT; ++n){ //loop for prefixing and sufixing numbers to strings
 		for(int idx=0; idx<globalData.dict_len; ++idx){ //iterating over the elements in the dict
-			
+
+			pthread_testcancel(); //For producer thread cancelation invoked by the consumer signaled by the custom
+
 			leading_num(globalData.dict[idx], buf, n);
 			hash_and_compare(buf);
 
@@ -75,6 +81,9 @@ void* capitalised(){
 
 	for(int n=-1; n<NUMBER_APPEND_LIMIT; ++n){ //loop for prefixing and sufixing numbers to strings
 		for(int idx=0; idx<globalData.dict_len; ++idx){ //iterating over the words in the dict
+
+			pthread_testcancel(); //For producer thread cancelation invoked by the consumer signaled by the custom
+
 			capitalise(globalData.dict[idx], word);
 
 			leading_num(word, buf, n);
@@ -83,6 +92,8 @@ void* capitalised(){
 			if (n==-1) continue;
 			trailing_num(word, buf, n);
 			hash_and_compare(buf);
+
+			
 		}
 	}
 	pthread_barrier_wait(&bar_producers_finished);
@@ -95,6 +106,9 @@ void* all_uppercase(){
 
 	for(int n=-1; n<NUMBER_APPEND_LIMIT; ++n){ //loop for prefixing and sufixing numbers to strings
 		for(int idx=0; idx<globalData.dict_len; ++idx){ //iterating over the words in the dict
+
+			pthread_testcancel(); //For producer thread cancelation invoked by the consumer signaled by the custom
+
 			uppercase(globalData.dict[idx], word);
 
 			leading_num(word, buf, n);
@@ -103,6 +117,8 @@ void* all_uppercase(){
 			if (n==-1) continue;
 			trailing_num(word, buf, n);
 			hash_and_compare(buf);
+
+			
 		}
 	}
 	pthread_barrier_wait(&bar_producers_finished);
@@ -116,9 +132,14 @@ void* two_words_lowercase(){
 
 	for(int i=0; i<globalData.dict_len; ++i){
 		for(int k=0; k<globalData.dict_len; ++k){
+
+			pthread_testcancel(); //For producer thread cancelation invoked by the consumer signaled by the custom
+
 			two_words_space_between(globalData.dict[i], globalData.dict[k], buf);
 
 			hash_and_compare(buf);
+
+			
 		}
 	}
 	pthread_barrier_wait(&bar_producers_finished);
@@ -134,6 +155,8 @@ void* two_words_lowercase_numbers(){
 	for(int i=0; i<globalData.dict_len; ++i){
 		for(int k=0; k<globalData.dict_len; ++k){
 			for(int n=-1; n<NUMBER_APPEND_LIMIT; ++n){
+
+				pthread_testcancel(); //For producer thread cancelation invoked by the consumer signaled by the custom
 
 				//3word cat
 				leading_num(globalData.dict[i], word1, n); 
@@ -179,6 +202,8 @@ void* two_words_lowercase_numbers(){
 				two_words_space_between(word1, word2, buf);
 				hash_and_compare(buf);
 
+				
+
 			}
 		}
 	}
@@ -194,6 +219,9 @@ void* two_words_capitalised_uppercase(){
 
 	for(int i=0; i<globalData.dict_len; ++i){
 		for(int k=0; k<globalData.dict_len; ++k){
+
+			pthread_testcancel(); //For producer thread cancelation invoked by the consumer signaled by the custom
+			
 			//Word cat
 			capitalise(globalData.dict[i], word1);
 			two_words_space_between(word1, globalData.dict[k], buf);
@@ -238,6 +266,7 @@ void* two_words_capitalised_uppercase(){
 			two_words_space_between(word1, word2, buf);
 			hash_and_compare(buf);
 
+			
 		}
 	}
 	pthread_barrier_wait(&bar_producers_finished);
@@ -245,9 +274,8 @@ void* two_words_capitalised_uppercase(){
 }
 
 
-void print_summary(float time){
+void print_summary(){
 	printf("\n-------SUMMARY-------\n");
-	printf("Time: %fs\n", time);
 	printf("Accounts cracked: \n");
 	for(int idx=0; idx<globalData.users_len; ++idx){
 		if(globalData.users[idx].cracked){

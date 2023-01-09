@@ -9,6 +9,7 @@
 #define MAX_FILENAME 100 //defines the maximum lengh of a filename/path to file
 #define N_THREADS 7 //number of threads, including the consumer
 
+//TODO: tidy up this file. Maybe put everything in one struct?
 
 typedef struct {
     char hash[33]; //a hash will always be 32 chars in lenght, +1 for null terminator.
@@ -17,6 +18,9 @@ typedef struct {
     bool cracked; //Thread-modifiable mtx_crack
 } user;
 
+/*This structure contains data pertaining to user data, dictionaries and strictly password breaking.
+Global variables regarding multithreading; mutexes, flags, conditions, barriers, are defined outsude
+of this strucfutre.*/
 typedef struct {
     char dictFilename[MAX_FILENAME];
     char dbFilename[MAX_FILENAME];
@@ -43,6 +47,10 @@ extern pthread_mutex_t mtx_flag_found;
 extern pthread_barrier_t bar_producers_finished; 
 
 extern pthread_cond_t cnd_pass_found; //condition that will signal the consummer that a new passowrd was found
+//Used in conjunction with flag_passwd_found 
+
+extern bool consumer_end_prematurely; //This flag will be used by the signal handler to prematurely terminate the
+//program and display summary in the consumer thread
 
 
 

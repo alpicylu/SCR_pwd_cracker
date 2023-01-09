@@ -5,6 +5,7 @@
 #include <string.h>
 #include <time.h>
 #include <getopt.h>
+#include <signal.h>
 
 #include "parser.h"
 #include "stringmod.h"
@@ -20,16 +21,27 @@ pthread_mutex_t mtx_passwds_cracked;
 pthread_mutex_t mtx_flag_found;
 pthread_barrier_t bar_producers_finished;
 pthread_cond_t cnd_pass_found;
+bool consumer_end_prematurely;
 
-/*Make a function that will init global itself: set passwds_cracked to 0, set filenames, etc.*/
+/*the sole purpose of this habdler is to signal the consumer to end its work*/
+void signal_handler_exit_prematurely(int sig){
+    consumer_end_prematurely = true; //No need for mutex, this is the only place where
+    //this variable is modified. This variable is read in consumer, but threre still should be no problem?
 
-/*Initialises teh structure glData*/
+    //Setting those does not mean that a new password was found. Thats just for un-waiting the consumer
+    pthread_cond_signal(&cnd_pass_found);
+    globalData.flag_passwd_found = true;
+    
+}
+
+/*Initialises global data*/
 void init_global(char* db, char* dict)
 {
     strcpy(globalData.dbFilename, db);
     strcpy(globalData.dictFilename, dict);
     globalData.passwds_cracked = 0;
     globalData.flag_passwd_found = false;
+    consumer_end_prematurely = false;
     initialise_db();
     initialise_dict();
 }
@@ -46,8 +58,7 @@ void *show_results()
     {
 
         pthread_mutex_lock(&mtx_passwds_cracked);
-        if (globalData.users_len == globalData.passwds_cracked)
-            break;
+        if (globalData.users_len == globalData.passwds_cracked) break;
         // if (globalData.passwds_cracked == 4) break;
         pthread_mutex_unlock(&mtx_passwds_cracked);
 
@@ -57,16 +68,17 @@ void *show_results()
             pthread_cond_wait(&cnd_pass_found, &mtx_flag_found);
         }
         globalData.flag_passwd_found = false;
-        // pthread_mutex_unlock(&mtx_flag_found);
 
-        /*this might seem strange at first: why do i unlock a mutex just to lock it back a few lines below?
-        because this is the place where i need to put the testcancel.
-        If i didnt rdo it i would have to either cancel the thread before the mutex was unlocked, which is ugly
-        and shuld be avoided, or print out the last found password twice (cancelation at MARK), because the delegated producer signals
-        this thread as if a new password has been found to unlock it. */
-        // pthread_testcancel();
+        /*Condition only true if signaled by the custom handler*/
+        if(consumer_end_prematurely){
+            for(int i=1; i<N_THREADS; ++i){ //thread 0 is consumer
+                pthread_cancel(threads[i]);
+            }
+            print_summary();
+            printf("I QUIT\n");
+            pthread_exit(NULL);
+        }
 
-        // pthread_mutex_lock(&mtx_flag_found);
         idx = globalData.newly_cracked_idx;
         printf("%d - ", idx);
         pthread_mutex_unlock(&mtx_flag_found);
@@ -81,6 +93,8 @@ void *show_results()
 
 int main(int argc, char *argv[])
 {
+    signal(SIGINT, signal_handler_exit_prematurely);
+
     char dbFilename[MAX_FILENAME];
     char dictFilename[MAX_FILENAME];
 
@@ -104,10 +118,21 @@ int main(int argc, char *argv[])
         }
     }
 
-    // int n_threads = 7;
-    // pthread_t threads[n_threads];
     pthread_attr_t attr;
-    
+
+    //typedefed a poiner to a function that returns a void* and that takes no arguments
+    typedef void* (*producer)(void*);
+    //number of producers is the same as the number of threds
+    //this does not always have to be the issue though
+    //this is a list of all different producers, which has to be updated manually
+    producer producers[N_THREADS-1] = { 
+        all_lowercase,
+        all_uppercase,
+        capitalised,
+        two_words_lowercase_numbers,
+        two_words_capitalised_uppercase,
+        two_words_lowercase
+    };
 
     init_global(dbFilename, dictFilename);
     sleep(1);
@@ -124,14 +149,21 @@ int main(int argc, char *argv[])
 
     pthread_barrier_init(&bar_producers_finished, NULL, N_THREADS-1);
 
-    clock_t start = clock();
+    /*A problem might occur when the number of producers i smaller than the number of threads
+    I guess you could malloc space in an array of pthread_t, an the number of allocations
+    would be equal to the number of producers, but maybe later.*/
+    /*WARNING: This requires a little ducktape, so be sure that the number
+    of producer funcitons defined in the array is equal to the number of producer threads*/
+    for(int i=0; i<N_THREADS-1; ++i){
+        pthread_create(&threads[i+1], &attr, producers[i], NULL);
+    }
 
-    pthread_create(&threads[1], &attr, all_lowercase, (void *)&threads[0]);
-    pthread_create(&threads[2], &attr, all_uppercase, NULL);
-    pthread_create(&threads[3], &attr, capitalised, NULL);
-    pthread_create(&threads[4], &attr, two_words_lowercase_numbers, NULL);
-    pthread_create(&threads[5], &attr, two_words_capitalised_uppercase, NULL);
-    pthread_create(&threads[6], &attr, two_words_lowercase, NULL);
+    // pthread_create(&threads[1], &attr, all_lowercase, (void *)&threads[0]);
+    // pthread_create(&threads[2], &attr, all_uppercase, NULL);
+    // pthread_create(&threads[3], &attr, capitalised, NULL);
+    // pthread_create(&threads[4], &attr, two_words_lowercase_numbers, NULL);
+    // pthread_create(&threads[5], &attr, two_words_capitalised_uppercase, NULL);
+    // pthread_create(&threads[6], &attr, two_words_lowercase, NULL);
 
     pthread_create(&threads[0], &attr, show_results, NULL); // consoomer
 
@@ -148,8 +180,7 @@ int main(int argc, char *argv[])
     pthread_cond_destroy(&cnd_pass_found);
     pthread_barrier_destroy(&bar_producers_finished);
 
-    clock_t end = clock();
-    print_summary((float)(end - start) / CLOCKS_PER_SEC);
+    if(!consumer_end_prematurely) print_summary(); //print sumary here only if progam has not ended prematurely
 
     cleanup();
 
