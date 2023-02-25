@@ -28,7 +28,6 @@ void initialise_db(){
     char temp_str[100]; //used for remove_white_space. stores the current hash, and then email
     char line[max_line];
     FILE* db = fopen(globalData.dbFilename, "r");
-    // printf("%s\n", globalData.dbFilename);
 
     if( db == NULL ){
         printf("DB: ERROR: At least one of the files have not been found.\n");

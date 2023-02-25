@@ -73,6 +73,7 @@ void *show_results()
 
         /*Condition only true if signaled by the custom handler*/
 
+        /*Procs if signal handler is called. */
         if(consumer_end_prematurely){
             pthread_mutex_unlock(&mtx_flag_found);
             for(int i=1; i<N_THREADS; ++i){ //thread 0 is consumer
@@ -81,7 +82,6 @@ void *show_results()
             print_summary();
             printf("Producer quit\n");
 
-            
             pthread_exit(NULL);
         }
 
@@ -173,6 +173,8 @@ int main(int argc, char *argv[])
 
     pthread_create(&threads[0], &attr, show_results, NULL); // consoomer
 
+    //maybe i soud turn this join off in case of premature termination
+    
     for (int i = 0; i < N_THREADS; ++i)
     {
         pthread_join(threads[i], NULL);
@@ -193,24 +195,6 @@ int main(int argc, char *argv[])
     pthread_exit(NULL);
 }
 
-// void driver(){
-
-//     globalData.dbFilename = "/home/aleksander/scr2/10lista/DB.txt";
-//     globalData.dictFilename =  "/home/aleksander/scr2/10lista/dict.txt";
-//     globalData.passwds_cracked = 0;
-
-//     initialise_dict();
-//     initialise_db();
-
-//     all_lowercase(); //TH1
-//     all_uppercase(); //TH2
-//     capitalised(); //TH3
-
-//     print_summary(); //TH0 (main)
-
-//     cleanup();
-
-// }
 
 /*implementing a separate structure for just cracked passwords and emails is redundant, since it would just be a copy of the
 content found in glData.

@@ -11,6 +11,11 @@ void hash_and_compare(const char* in){
 	bytes2md5(in, strlen(in), md5);
 
 	pthread_testcancel(); //For producer thread cancelation invoked by the consumer signaled by the custom
+	//pthread_cancel needs a cancelation point. Some funcitons serve as natural points but i want to hard-set
+	//one right here. In theory it will terminate this tread if cancel() was called and a thread reaches
+	//this point in this function. Unfortuanately, despite signaling and canceling every thread, the programm
+	//still freezes in the console. The same pthread_cancel() call is present in other functions and serves
+	//the same purpose.
 
 	//iterate over every user. If user has already beed cracked, skip to the next iteration.
 	for(int idx=0; idx<globalData.users_len; ++idx){
@@ -61,13 +66,10 @@ void* all_lowercase(){
 			hash_and_compare(buf);
 		}
 	}
-
-	/*informing the consumer:*/
+	/*informing the consumer. This barrer is set at the end of each producer-funciton. Every thread will wait
+	untill all threads finish their work.*/
 	pthread_barrier_wait(&bar_producers_finished);
-	//set found password to true and signal the condition to free the consumer
-	//actually theres no need to signal the consumer, docs say that a thread is cancallabe while it waits.
-	// globalData.flag_passwd_found = true; //No need to mutex, only this thread does this operation.
-	// pthread_cond_signal(&cnd_pass_found);
+
 	pthread_cancel(threads[0]); //thread 0 is the consumer.
 
 	pthread_exit(NULL);
@@ -91,8 +93,6 @@ void* capitalised(){
 			if (n==-1) continue;
 			trailing_num(word, buf, n);
 			hash_and_compare(buf);
-
-			
 		}
 	}
 	pthread_barrier_wait(&bar_producers_finished);
